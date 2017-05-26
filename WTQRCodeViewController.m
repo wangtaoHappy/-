@@ -19,6 +19,7 @@
 }
 
 @property (strong, nonatomic)UIImage *image;
+@property (strong, nonatomic)UIButton *titleButton;
 
 @end
 
@@ -40,15 +41,19 @@
     }
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.bounds = CGRectMake(0, 0, 50, 30);
+//    button.backgroundColor = [UIColor blueColor];
+    button.bounds = CGRectMake(0, 0, 100, 40);
+    [button setTitle:@"点击扫描" forState:UIControlStateNormal];
     button.center = self.view.center;
     [button addTarget:self action:@selector(startSearch) forControlEvents:UIControlEventTouchUpInside];
     [button setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-    [self.view addSubview:button];
+    _titleButton = button;
+    [self.view addSubview:_titleButton];
 }
 
 - (void)startSearch {
 
+    _titleButton.alpha = 0;
     NSError *error;
     //设备
     _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -128,6 +133,7 @@
     //取出选中的图片
     UIImage *pickImage = info[UIImagePickerControllerOriginalImage];
     self.image = [self alterImageSize:pickImage];
+    _titleButton.titleLabel.text = @"正在扫描";
     [self dismissViewControllerAnimated:YES completion:^{
         [self codeRe];
     }];
@@ -150,6 +156,7 @@
     //创建探测器
     CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
     NSArray *feature = [detector featuresInImage:ciImage];
+    _titleButton .titleLabel.text = @"扫描完成";
     //取出探测到的数据
     for (CIQRCodeFeature *result in feature) {
         content = result.messageString;
@@ -157,48 +164,12 @@
         return;
     }
 }
-//选中图片的回调
-//-(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
-//{
-//    NSString *content = @"" ;
-//    //取出选中的图片
-//    UIImage *pickImage = info[UIImagePickerControllerOriginalImage];
-//    NSData *imageData = UIImagePNGRepresentation(pickImage);
-//    CIImage *ciImage = [CIImage imageWithData:imageData];
-//    
-//    //创建探测器
-//    CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
-//    NSArray *feature = [detector featuresInImage:ciImage];
-//    //取出探测到的数据
-//    for (CIQRCodeFeature *result in feature) {
-//        content = result.messageString;
-//        [self compelet:content];
-//        return;
-//    }
-//}
-
-//- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0) {
-//
-//    NSString *content = @"" ;
-////    NSData *imageData = UIImagePNGRepresentation(image);
-//    CIImage *ciImage = [CIImage imageWithCGImage:image.CGImage];
-//    //创建探测器
-//    CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
-//    NSArray *feature = [detector featuresInImage:ciImage];
-//    //取出探测到的数据
-//    [self dismissViewControllerAnimated:YES completion:nil];
-//    for (CIQRCodeFeature *result in feature) {
-//        content = result.messageString;
-//        [self compelet:content];
-//        return;
-//    }
-//    
-//}
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
+
 - (void)compelet:(NSString *)resultMessageString {
 
     [self playBeep];
