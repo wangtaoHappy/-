@@ -17,6 +17,9 @@
     AVCaptureMetadataOutput     *_output;
     AVCaptureVideoPreviewLayer  *_previewLayer;
 }
+
+@property (strong, nonatomic)UIImage *image;
+
 @end
 
 @implementation WTQRCodeViewController
@@ -120,27 +123,82 @@
     imagePicker.delegate = self;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
-//选中图片的回调
--(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
-{
-    NSString *content = @"" ;
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
     //取出选中的图片
     UIImage *pickImage = info[UIImagePickerControllerOriginalImage];
-    NSData *imageData = UIImagePNGRepresentation(pickImage);
-    CIImage *ciImage = [CIImage imageWithData:imageData];
+    self.image = [self alterImageSize:pickImage];
+    [self dismissViewControllerAnimated:YES completion:^{
+        [self codeRe];
+    }];
+}
+
+//利用苹果原生的来扫描二维码图片，有时图片太大会造成crash 所以在这里修改一下图片大小
+- (UIImage *)alterImageSize:(UIImage *)originalImage {
+
+    UIGraphicsBeginImageContext(originalImage.size);
+    [originalImage drawInRect:CGRectMake(0, 0, originalImage.size.width, originalImage.size.height)];
+    UIImage *NewImage = [UIImage imageWithCGImage:[UIGraphicsGetImageFromCurrentImageContext() CGImage]];
+    return NewImage;
+}
+
+- (void)codeRe {
     
+    NSString *content = @"" ;
+    NSData *imageData = UIImagePNGRepresentation(self.image);
+    CIImage *ciImage = [CIImage imageWithData:imageData];
     //创建探测器
     CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
     NSArray *feature = [detector featuresInImage:ciImage];
     //取出探测到的数据
     for (CIQRCodeFeature *result in feature) {
-        
         content = result.messageString;
         [self compelet:content];
         return;
     }
 }
+//选中图片的回调
+//-(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+//{
+//    NSString *content = @"" ;
+//    //取出选中的图片
+//    UIImage *pickImage = info[UIImagePickerControllerOriginalImage];
+//    NSData *imageData = UIImagePNGRepresentation(pickImage);
+//    CIImage *ciImage = [CIImage imageWithData:imageData];
+//    
+//    //创建探测器
+//    CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
+//    NSArray *feature = [detector featuresInImage:ciImage];
+//    //取出探测到的数据
+//    for (CIQRCodeFeature *result in feature) {
+//        content = result.messageString;
+//        [self compelet:content];
+//        return;
+//    }
+//}
 
+//- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0) {
+//
+//    NSString *content = @"" ;
+////    NSData *imageData = UIImagePNGRepresentation(image);
+//    CIImage *ciImage = [CIImage imageWithCGImage:image.CGImage];
+//    //创建探测器
+//    CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:nil];
+//    NSArray *feature = [detector featuresInImage:ciImage];
+//    //取出探测到的数据
+//    [self dismissViewControllerAnimated:YES completion:nil];
+//    for (CIQRCodeFeature *result in feature) {
+//        content = result.messageString;
+//        [self compelet:content];
+//        return;
+//    }
+//    
+//}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
 - (void)compelet:(NSString *)resultMessageString {
 
     [self playBeep];
