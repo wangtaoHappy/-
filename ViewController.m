@@ -27,7 +27,7 @@
     [button setTintColor:[UIColor grayColor]];
     [button addTarget:self action:@selector(starSearsh:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:button];
-    _lable = [[UILabel alloc] initWithFrame:CGRectMake(0, button.frame.origin.y + button.frame.size.height, 200, 40)];
+    _lable = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMidX(self.view.bounds) - CGRectGetWidth(self.view.bounds)/2, button.frame.origin.y + button.frame.size.height, CGRectGetWidth(self.view.bounds), 40)];
     _lable.backgroundColor = [UIColor lightGrayColor];
     [self.view addSubview:_lable];
 }

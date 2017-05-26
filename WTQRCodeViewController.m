@@ -24,7 +24,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.view.backgroundColor = [UIColor colorWithWhite:1 alpha:0.5];
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"相册" style:UIBarButtonItemStylePlain target:self action:@selector(choicePhoto)];
     self.navigationItem.rightBarButtonItem = item;
     self.navigationItem.title = @"扫一扫";
@@ -36,6 +35,13 @@
         [self presentViewController:alertController animated:YES completion:nil];
         return;
     }
+    
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.bounds = CGRectMake(0, 0, 50, 30);
+    button.center = self.view.center;
+    [button addTarget:self action:@selector(startSearch) forControlEvents:UIControlEventTouchUpInside];
+    [button setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    [self.view addSubview:button];
 }
 
 - (void)startSearch {
@@ -126,9 +132,9 @@
     //创建探测器
     CIDetector *detector = [CIDetector detectorOfType:CIDetectorTypeQRCode context:nil options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
     NSArray *feature = [detector featuresInImage:ciImage];
-    
     //取出探测到的数据
     for (CIQRCodeFeature *result in feature) {
+        
         content = result.messageString;
         [self compelet:content];
         return;
